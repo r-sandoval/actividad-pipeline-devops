@@ -1,31 +1,39 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'maven-3.9.6'
+    }
+
     stages {
-        stage('Clonar Repositorio') {
+        stage('Descargar Codigo') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'https://github.com/r-sandoval/actividad-pipeline-devops.git'
             }
         }
 
-        stage('Compilar y Empaquetar') {
+        stage('Compilar Proyecto') {
             steps {
-                // Compila usando un contenedor temporal de Maven con Java 17
-                sh 'docker run --rm -v "${WORKSPACE}":/usr/src/mymaven -w /usr/src/mymaven maven:3.8-openjdk-17-slim mvn clean package -DskipTests'
+                // Se ejecuta la compilación empaquetando el archivo .war
+                sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Construir Imagen Docker') {
             steps {
+                // Construye la imagen de la sucursal usando el Dockerfile del repositorio
                 sh 'docker build -t sucursal-vehiculos:latest .'
             }
         }
 
         stage('Desplegar Contenedor') {
             steps {
+                // Detiene y elimina el contenedor si ya existe
                 sh 'docker stop sucursal-app || true'
                 sh 'docker rm sucursal-app || true'
-                sh 'docker run -d --name sucursal-app -p 9090:8080 sucursal-vehiculos:latest'
+                
+                // Despliega usando la red de la máquina para conectar con MySQL local en el puerto 8080 nativo
+                sh 'docker run -d --name sucursal-app --network host sucursal-vehiculos:latest'
             }
         }
     }
@@ -35,7 +43,7 @@ pipeline {
             echo 'Pipeline ejecutado con éxito.'
         }
         failure {
-            echo 'Hubo un fallo en la ejecución del pipeline.'
+            echo 'El pipeline ha fallado. Revisa los logs.'
         }
     }
 }

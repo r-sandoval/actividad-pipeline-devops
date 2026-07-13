@@ -1,45 +1,41 @@
 pipeline {
     agent any
-    
-    tools {
-        jdk 'Java17'
-        maven 'Maven3'
-    }
-    
+
     stages {
         stage('Clonar Repositorio') {
             steps {
                 checkout scm
             }
         }
-        
-        stage('Compilar y Empaquetar (Maven)') {
+
+        stage('Compilar y Empaquetar') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                // Compila usando un contenedor temporal de Maven con Java 17
+                sh 'docker run --rm -v "${WORKSPACE}":/usr/src/mymaven -w /usr/src/mymaven maven:3.8-openjdk-17-slim mvn clean package -DskipTests'
             }
         }
-        
+
         stage('Construir Imagen Docker') {
             steps {
-                sh 'docker build -t app-sucursal:latest .'
+                sh 'docker build -t sucursal-vehiculos:latest .'
             }
         }
-        
+
         stage('Desplegar Contenedor') {
             steps {
-                sh 'docker stop app-sucursal-container || true'
-                sh 'docker rm app-sucursal-container || true'
-                sh 'docker run -d --name app-sucursal-container -p 9090:9090 app-sucursal:latest'
+                sh 'docker stop sucursal-app || true'
+                sh 'docker rm sucursal-app || true'
+                sh 'docker run -d --name sucursal-app -p 9090:8080 sucursal-vehiculos:latest'
             }
         }
     }
-    
+
     post {
         success {
-            echo '¡Pipeline ejecutado con éxito y contenedor desplegado!'
+            echo 'Pipeline ejecutado con éxito.'
         }
         failure {
-            echo 'Hubo un fallo en la ejecución del pipeline. Revisa los logs.'
+            echo 'Hubo un fallo en la ejecución del pipeline.'
         }
     }
 }

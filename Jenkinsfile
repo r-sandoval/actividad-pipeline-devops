@@ -15,14 +15,12 @@ pipeline {
 
         stage('Compilar Proyecto') {
             steps {
-                // Se ejecuta la compilación empaquetando el archivo .war
                 sh 'mvn clean package -DskipTests'
             }
         }
 
         stage('Construir Imagen Docker') {
             steps {
-                // Construye la imagen de la sucursal usando el Dockerfile del repositorio
                 sh 'docker build -t sucursal-vehiculos:latest .'
             }
         }

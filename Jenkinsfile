@@ -29,7 +29,6 @@ pipeline {
             steps {
                 sh 'docker stop sucursal-app || true'
                 sh 'docker rm sucursal-app || true'
-                // Unimos la app a la red virtual y exponemos el puerto 9090
                 sh 'docker run -d --name sucursal-app --network sucursal-net -p 9090:8080 sucursal-vehiculos:latest'
             }
         }

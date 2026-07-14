@@ -6,17 +6,12 @@ package com.vehiculos.VehiculosRest.controllers;
 
 import com.vehiculos.VehiculosRest.models.VehiculoModel;
 import com.vehiculos.VehiculosRest.services.VehiculoService;
-import com.vehiculos.VehiculosRest.services.VehiculoService.UserNotFoundException;
 import java.util.ArrayList;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,16 +27,15 @@ public class VehiculoController {
     @Autowired
     private VehiculoService vehiculoService;
     
-    // Método para obtener la lista de vehículos (Ya lo tenías)
     @GetMapping
-    public ArrayList<VehiculoModel> getAutos(){
-        return this.vehiculoService.getVehiculos();
+    public ResponseEntity<ArrayList<VehiculoModel>> getAutos() {
+        ArrayList<VehiculoModel> listaAutos = this.vehiculoService.getVehiculos();
+        return new ResponseEntity<>(listaAutos, HttpStatus.OK);
     }
    
-    // ¡MÉTODO AGREGADO! Permite registrar vehículos mediante POST
     @PostMapping
     public ResponseEntity<VehiculoModel> guardarAuto(@RequestBody VehiculoModel vehiculo) {
-        VehiculoModel nuevoVehiculo = this.vehiculoService.saveVehiculo(vehiculo);
+        VehiculoModel nuevoVehiculo = this.vehiculoService.saveAuto(vehiculo);
         return new ResponseEntity<>(nuevoVehiculo, HttpStatus.CREATED);
     }
 }

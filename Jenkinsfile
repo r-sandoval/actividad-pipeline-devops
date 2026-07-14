@@ -27,14 +27,12 @@ pipeline {
             }
         }
 
-        stage('Desplegar Contenedor') {
+       stage('Desplegar Contenedor') {
             steps {
-                // Detiene y elimina el contenedor si ya existe
                 sh 'docker stop sucursal-app || true'
                 sh 'docker rm sucursal-app || true'
-                
-                // Despliega usando la red de la máquina para conectar con MySQL local en el puerto 8080 nativo
-                sh 'docker run -d --name sucursal-app --network host sucursal-vehiculos:latest'
+                // Unimos la app a la red virtual y exponemos el puerto 9090
+                sh 'docker run -d --name sucursal-app --network sucursal-net -p 9090:8080 sucursal-vehiculos:latest'
             }
         }
     }

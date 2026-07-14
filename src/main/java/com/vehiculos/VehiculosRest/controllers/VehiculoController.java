@@ -29,13 +29,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/vehiculos")
 public class VehiculoController {
     
-    
     @Autowired
     private VehiculoService vehiculoService;
     
+    // Método para obtener la lista de vehículos (Ya lo tenías)
     @GetMapping
     public ArrayList<VehiculoModel> getAutos(){
         return this.vehiculoService.getVehiculos();
     }
    
+    // ¡MÉTODO AGREGADO! Permite registrar vehículos mediante POST
+    @PostMapping
+    public ResponseEntity<VehiculoModel> guardarAuto(@RequestBody VehiculoModel vehiculo) {
+        VehiculoModel nuevoVehiculo = this.vehiculoService.saveVehiculo(vehiculo);
+        return new ResponseEntity<>(nuevoVehiculo, HttpStatus.CREATED);
+    }
 }

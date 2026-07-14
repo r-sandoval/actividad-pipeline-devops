@@ -2,45 +2,73 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.vehiculos.VehiculosRest.controllers;
+package com.vehiculos.VehiculosRest.services;
 
 import com.vehiculos.VehiculosRest.models.VehiculoModel;
-import com.vehiculos.VehiculosRest.services.VehiculoService;
-import com.vehiculos.VehiculosRest.services.VehiculoService.UserNotFoundException;
+import com.vehiculos.VehiculosRest.repositories.IVehiculoRepository;
 import java.util.ArrayList;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author Villacura
  */
-@RestController
-@RequestMapping("/vehiculos")
-public class VehiculoController {
+@Service
+public class VehiculoService {
     
     @Autowired
-    private VehiculoService vehiculoService;
+    IVehiculoRepository autoRepository;
     
-    @GetMapping
-    public ArrayList<VehiculoModel> getAutos(){
-        return this.vehiculoService.getVehiculos();
+    public ArrayList<VehiculoModel> getVehiculos(){
+        return (ArrayList<VehiculoModel>) autoRepository.findAll();
     }
-   
-    @PostMapping
-    public ResponseEntity<VehiculoModel> guardarAuto(@RequestBody VehiculoModel vehiculo) {
-        // Corregido: se llama a saveAuto como está definido en tu VehiculoService
-        VehiculoModel nuevoVehiculo = this.vehiculoService.saveAuto(vehiculo);
-        return new ResponseEntity<>(nuevoVehiculo, HttpStatus.CREATED);
+        
+    public VehiculoModel saveAuto(VehiculoModel auto){
+        return autoRepository.save(auto);
+    }
+
+    public Optional<VehiculoModel> getbyId(Long id){
+        return autoRepository.findById(id);
+    }
+    
+    public VehiculoModel updateById(VehiculoModel request , Long id) {
+        Optional<VehiculoModel> optionalAuto = autoRepository.findById(id);
+
+        if (optionalAuto.isPresent()) {
+            VehiculoModel auto = optionalAuto.get();
+            auto.setMarca(request.getMarca());
+            auto.setModelo(request.getModelo());
+            auto.setAno(request.getAno());
+            auto.setColor(request.getColor());
+            auto.setTipo_combustible(request.getTipo_combustible());
+
+            autoRepository.save(auto);
+
+            return auto;
+        } else {
+            throw new UserNotFoundException("El vehiculo que intenta actualizar no existe con el id " + id);
+        }
+    }
+        
+    public void deleteAuto(Long id) {
+        Optional<VehiculoModel> optionalAuto = autoRepository.findById(id);
+
+        if (optionalAuto.isPresent()) {
+            try {
+                autoRepository.deleteById(id);
+            } catch (Exception e) {
+                throw new RuntimeException("El vehiculo que intenta eliminar no existe con el id " + id);
+            }
+        } else {
+            throw new UserNotFoundException("El vehiculo que intenta eliminar no existe con el id " + id);
+        }
+    }
+        
+    public class UserNotFoundException extends RuntimeException {
+        public UserNotFoundException(String message) {
+            super(message);
+        }
     }
 }

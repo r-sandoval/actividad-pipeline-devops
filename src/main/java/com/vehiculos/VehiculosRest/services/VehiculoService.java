@@ -2,83 +2,45 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.vehiculos.VehiculosRest.services;
+package com.vehiculos.VehiculosRest.controllers;
+
 import com.vehiculos.VehiculosRest.models.VehiculoModel;
-import com.vehiculos.VehiculosRest.repositories.IVehiculoRepository;
+import com.vehiculos.VehiculosRest.services.VehiculoService;
+import com.vehiculos.VehiculosRest.services.VehiculoService.UserNotFoundException;
 import java.util.ArrayList;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
  * @author Villacura
  */
-@Service
-public class VehiculoService {
+@RestController
+@RequestMapping("/vehiculos")
+public class VehiculoController {
+    
     @Autowired
-    IVehiculoRepository autoRepository;
+    private VehiculoService vehiculoService;
     
-    
-    public ArrayList<VehiculoModel> getVehiculos(){
-        return (ArrayList<VehiculoModel>)  autoRepository.findAll();
+    @GetMapping
+    public ArrayList<VehiculoModel> getAutos(){
+        return this.vehiculoService.getVehiculos();
     }
-        
-        
-        
-    public VehiculoModel saveAuto(VehiculoModel auto){
-        return autoRepository.save(auto);
+   
+    @PostMapping
+    public ResponseEntity<VehiculoModel> guardarAuto(@RequestBody VehiculoModel vehiculo) {
+        // Corregido: se llama a saveAuto como está definido en tu VehiculoService
+        VehiculoModel nuevoVehiculo = this.vehiculoService.saveAuto(vehiculo);
+        return new ResponseEntity<>(nuevoVehiculo, HttpStatus.CREATED);
     }
-
-    public Optional<VehiculoModel> getbyId(Long id){
-        return autoRepository.findById(id);
-    }
-    
-    
-        public VehiculoModel updateById(VehiculoModel request , Long id) {
-        Optional<VehiculoModel> optionalAuto = autoRepository.findById(id);
-
-        if (optionalAuto.isPresent()) {
-            VehiculoModel auto = optionalAuto.get();
-            auto.setMarca(request.getMarca());
-            auto.setModelo(request.getModelo());
-            auto.setAno(request.getAno());
-            auto.setColor(request.getColor());
-            auto.setTipo_combustible(request.getTipo_combustible());
-
-            // Guardar los cambios en la base de datos
-            autoRepository.save(auto);
-
-            return auto;
-        } else {
-            throw new UserNotFoundException("El vehiculo que intenta eliminar no existe con el id " + id);
-        }
-    }
-
-        
-    public void deleteAuto(Long id) {
-        Optional<VehiculoModel> optionalAuto = autoRepository.findById(id);
-
-        if (optionalAuto.isPresent()) {
-            try {
-                autoRepository.deleteById(id);
-            } catch (Exception e) {
-                // Manejar cualquier excepción lanzada durante la eliminación
-                throw new RuntimeException("El vehiculo que intenta eliminar no existe con el id " + id);
-            }
-        } else {
-            throw new UserNotFoundException("El vehiculo que intenta eliminar no existe con el id " + id);
-        }
-    }
-    
-        
-    public class UserNotFoundException extends RuntimeException {
-        public UserNotFoundException(String message) {
-            super(message);
-        }
-    }
-        
-    
-
 }
